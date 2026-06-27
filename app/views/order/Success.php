@@ -182,22 +182,46 @@ $statusInfo = $statusMap[$status] ?? ['label' => $status, 'icon' => 'bi-question
                             <?php
                             $qrAmount = (int)$order->getTong_thanh_toan();
                             $qrCode = htmlspecialchars($order->getMa_don_hang());
-                            $qrUrl = "https://img.vietqr.io/image/vietinbank-102873928192-compact2.png?amount={$qrAmount}&addInfo={$qrCode}&accountName=CONG%20TY%20THE%20THAO%20BAO%20DAT";
+                            
+                            // Nếu admin tải lên QR Code tĩnh riêng (Momo, QR cố định...) thì dùng ảnh đó
+                            if (!empty($cauhinh['qr_code_url'])) {
+                                $qrUrl = $cauhinh['qr_code_url'];
+                            } else {
+                                // Ngược lại tự tạo mã VietQR động theo cấu hình ngân hàng
+                                $bankCode = urlencode($cauhinh['bank_name'] ?? 'vietinbank');
+                                $bankAcc = urlencode($cauhinh['bank_account'] ?? '102873928192');
+                                $bankOwner = urlencode($cauhinh['bank_owner'] ?? 'CONG TY THE THAO BAO DAT');
+                                $qrUrl = "https://img.vietqr.io/image/{$bankCode}-{$bankAcc}-compact2.png?amount={$qrAmount}&addInfo={$qrCode}&accountName={$bankOwner}";
+                            }
+                            
+                            // Bản đồ tên hiển thị ngân hàng
+                            $bankNamesMap = [
+                                'vietinbank' => 'VietinBank',
+                                'mbbank' => 'MBBank',
+                                'vcb' => 'Vietcombank',
+                                'bidv' => 'BIDV',
+                                'tcb' => 'Techcombank',
+                                'acb' => 'ACB',
+                                'sacombank' => 'Sacombank',
+                                'tpbank' => 'TPBank',
+                                'vpbank' => 'VPBank'
+                            ];
+                            $displayBankName = $bankNamesMap[strtolower($cauhinh['bank_name'] ?? '')] ?? strtoupper($cauhinh['bank_name'] ?? 'VietinBank');
                             ?>
-                            <img src="<?= $qrUrl ?>" alt="Mã QR VietQR" class="img-fluid border rounded-3 p-2 shadow-sm" style="max-height: 250px;">
+                            <img src="<?= $qrUrl ?>" alt="Mã QR Chuyển khoản" class="img-fluid border rounded-3 p-2 shadow-sm" style="max-height: 250px;">
                         </div>
                         <div class="col-sm-6 text-start">
                             <div class="mb-2">
                                 <span class="text-muted small d-block">Ngân hàng:</span>
-                                <strong class="text-dark">VietinBank</strong>
+                                <strong class="text-dark"><?= htmlspecialchars($displayBankName) ?></strong>
                             </div>
                             <div class="mb-2">
                                 <span class="text-muted small d-block">Số tài khoản:</span>
-                                <strong class="text-primary fs-5">1028 7392 8192</strong>
+                                <strong class="text-primary fs-5"><?= htmlspecialchars($cauhinh['bank_account'] ?? '102873928192') ?></strong>
                             </div>
                             <div class="mb-2">
                                 <span class="text-muted small d-block">Chủ tài khoản:</span>
-                                <strong class="text-dark">CONG TY TNHH THE THAO BAO DAT</strong>
+                                <strong class="text-dark"><?= htmlspecialchars($cauhinh['bank_owner'] ?? 'CONG TY TNHH THE THAO BAO DAT') ?></strong>
                             </div>
                             <div class="mb-2">
                                 <span class="text-muted small d-block">Số tiền chuyển:</span>

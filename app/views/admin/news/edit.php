@@ -1,24 +1,25 @@
 <div class="container-fluid mt-4">
-    <h2 class="mb-4">Thêm Bài Viết Mới</h2>
+    <h2 class="mb-4">Chỉnh sửa Bài Viết</h2>
 
-    <form action="?page=admin-news-store" method="POST" enctype="multipart/form-data">
-
+    <form action="?page=admin-news-update" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="id" value="<?= $news['id'] ?>">
+        
         <div class="row">
             <div class="col-md-8">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Tiêu đề bài viết</label>
-                    <input type="text" name="tieu_de" class="form-control" required placeholder="Nhập tiêu đề...">
+                    <input type="text" name="tieu_de" class="form-control" required placeholder="Nhập tiêu đề..." value="<?= htmlspecialchars($news['tieu_de']) ?>">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Tóm tắt (Hiển thị ở trang danh sách)</label>
                     <textarea name="tom_tat" class="form-control" rows="3" required
-                        placeholder="Nhập tóm tắt ngắn..."></textarea>
+                        placeholder="Nhập tóm tắt ngắn..."><?= htmlspecialchars($news['tom_tat']) ?></textarea>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Nội dung bài viết</label>
-                    <textarea name="noi_dung" id="editor" class="form-control"></textarea>
+                    <textarea name="noi_dung" id="editor" class="form-control"><?= htmlspecialchars($news['noi_dung']) ?></textarea>
                 </div>
             </div>
 
@@ -26,18 +27,25 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold">Trạng thái</label>
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" name="trang_thai" id="trang_thai" checked>
-                        <label class="form-check-label" for="trang_thai">Xuất bản ngay</label>
+                        <input class="form-check-input" type="checkbox" name="trang_thai" id="trang_thai" <?= $news['trang_thai'] == 1 ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="trang_thai">Xuất bản hiển thị</label>
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Ảnh đại diện (Thumbnail)</label>
-                    <input type="file" name="anh_dai_dien" class="form-control" accept="image/*" required>
+                    <div class="mb-2">
+                        <?php if (!empty($news['anh_dai_dien'])): ?>
+                            <img src="<?= htmlspecialchars($news['anh_dai_dien']) ?>" alt="Thumbnail" class="img-thumbnail" style="max-width: 100%;">
+                        <?php endif; ?>
+                    </div>
+                    <input type="file" name="anh_dai_dien" class="form-control" accept="image/*">
+                    <small class="text-muted">Bỏ trống nếu không muốn đổi ảnh.</small>
                 </div>
 
                 <hr>
-                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save"></i> Lưu Bài Viết</button>
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save"></i> Cập nhật Bài Viết</button>
+                <a href="?page=admin-news" class="btn btn-outline-secondary w-100 mt-2">Hủy bỏ</a>
             </div>
         </div>
     </form>

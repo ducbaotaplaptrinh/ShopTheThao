@@ -47,7 +47,7 @@ $page = $_GET['page'] ?? "";
             <div class="logo-container ">
                 <a class="logo-container__link d-flex" href="#home">
                     <img
-                        src="assets/images/favicons/Logo.png"
+                        src="<?= htmlspecialchars($cauhinh['logo_url'] ?? 'assets/images/favicons/Logo.png') ?>"
                         alt="Logo"
                         class="logo-container__icon" />
 
@@ -225,7 +225,7 @@ $page = $_GET['page'] ?? "";
             <div class="logo-container ">
                 <a class="logo-container__link" href="#home">
                     <img
-                        src="assets/images/favicons/Logo.png"
+                        src="<?= htmlspecialchars($cauhinh['logo_url'] ?? 'assets/images/favicons/Logo.png') ?>"
                         alt="Logo"
                         class="logo-container__icon" />
                 </a>

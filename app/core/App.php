@@ -18,8 +18,13 @@ class App
 		$view = BASE_PATH . '/app/views/' . $route['view'];
 		$routeData = $route['data'] ?? [];
 		$danhMucModel = new SanPhamModel();
+		require_once BASE_PATH . '/app/models/admin/AdminSettingModel.php';
+		$settingModel = new \app\models\admin\AdminSettingModel();
+		$cauhinh = $settingModel->getSetting();
+
 		$chung = [
 			'megaMenu' => $danhMucModel->getDanhMucThuongHieu(), // Tự động nạp menu cho tất cả các trang
+			'cauhinh' => $cauhinh,
 		];
 
 		$controllerData = [];
