@@ -11,7 +11,7 @@
             <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
             <div>
                 <h4>Địa chỉ</h4>
-                <p>123 Đường Thể Thao, Quận 1, TP. Hồ Chí Minh</p>
+                <p><?= htmlspecialchars($cauhinh['dia_chi']) ?></p>
             </div>
         </div>
 
@@ -19,7 +19,7 @@
             <div class="icon"><i class="fas fa-phone-alt"></i></div>
             <div>
                 <h4>Điện thoại</h4>
-                <p>0123 456 789 (Hỗ trợ 24/7)</p>
+                <p><?= htmlspecialchars($cauhinh['sdt']) ?> (Hỗ trợ 24/7)</p>
             </div>
         </div>
 
@@ -27,7 +27,7 @@
             <div class="icon"><i class="fas fa-envelope"></i></div>
             <div>
                 <h4>Email</h4>
-                <p>support@shopthethao.com</p>
+                <p><?= htmlspecialchars($cauhinh['email']) ?></p>
             </div>
         </div>
 
@@ -36,7 +36,7 @@
             <div class="icon"><i class="fab fa-facebook" style="color: #1877F2;"></i></div>
             <div>
                 <h4>Facebook</h4>
-                <p><a href="https://facebook.com/datnguyen.kei" target="_blank"
+                <p><a href="<?= htmlspecialchars($cauhinh['facebook_link']) ?>" target="_blank"
                         style="text-decoration:none;font-weight:bold;color:#1877F2;">Nhắn tin qua Facebook</a></p>
             </div>
         </div>
@@ -45,7 +45,7 @@
             <div class="icon"><i class="fas fa-comment-dots" style="color: #0068FF;"></i></div>
             <div>
                 <h4>Zalo</h4>
-                <p><a href="https://zalo.me/0354001205" target="_blank"
+                <p><a href="<?= htmlspecialchars($cauhinh['zalo_link']) ?>" target="_blank"
                         style="text-decoration:none;font-weight:bold;color:#0068FF;">Nhắn tin qua Zalo</a></p>
             </div>
         </div>

@@ -410,6 +410,13 @@ return [
 		'action' => 'detail',
 		'pageStyles' => ['assets/css/news.css']
 	],
+	'admin-news' => [
+		'title' => 'Quản lý Tin tức | Quản trị',
+		'view' => 'admin/news/index.php',
+		'controller' => \app\controllers\admin\AdminNewsController::class,
+		'action' => 'index',
+		'pageStyles' => ['assets/css/admin.css']
+	],
 	// Thêm mới bài viết (Form)
 	'admin-news-create' => [
 		'title' => 'Thêm bài viết mới | Quản trị',
@@ -425,6 +432,97 @@ return [
 		'view' => 'admin/news/create.php',
 		'controller' => \app\controllers\admin\AdminNewsController::class,
 		'action' => 'store',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-news-edit' => [
+		'title' => 'Sửa bài viết | Quản trị',
+		'view' => 'admin/news/edit.php',
+		'controller' => \app\controllers\admin\AdminNewsController::class,
+		'action' => 'edit',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-news-update' => [
+		'title' => 'Cập nhật bài viết | Quản trị',
+		'view' => 'admin/news/index.php',
+		'controller' => \app\controllers\admin\AdminNewsController::class,
+		'action' => 'update',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-news-delete' => [
+		'title' => 'Xóa bài viết | Quản trị',
+		'view' => 'admin/news/index.php',
+		'controller' => \app\controllers\admin\AdminNewsController::class,
+		'action' => 'delete',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-news-toggle' => [
+		'title' => 'Đổi trạng thái bài viết',
+		'view' => 'errors/404.php',
+		'controller' => \app\controllers\admin\AdminNewsController::class,
+		'action' => 'toggleStatus',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-vouchers' => [
+		'title' => 'Quản lý Voucher | Quản trị',
+		'view' => 'admin/voucher/index.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'index',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-create' => [
+		'title' => 'Thêm Voucher mới | Quản trị',
+		'view' => 'admin/voucher/create.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'create',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-store' => [
+		'title' => 'Lưu Voucher mới | Quản trị',
+		'view' => 'admin/voucher/create.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'store',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-edit' => [
+		'title' => 'Sửa Voucher | Quản trị',
+		'view' => 'admin/voucher/edit.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'edit',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-update' => [
+		'title' => 'Cập nhật Voucher | Quản trị',
+		'view' => 'admin/voucher/index.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'update',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-delete' => [
+		'title' => 'Xóa Voucher | Quản trị',
+		'view' => 'admin/voucher/index.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'delete',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-toggle' => [
+		'title' => 'Đổi trạng thái Voucher',
+		'view' => 'errors/404.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'toggleStatus',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-setting' => [
+		'title' => 'Quản lý Giao diện | Quản trị',
+		'view' => 'admin/setting/index.php',
+		'controller' => \app\controllers\admin\AdminSettingController::class,
+		'action' => 'index',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-setting-update' => [
+		'title' => 'Lưu Cấu hình Giao diện | Quản trị',
+		'view' => 'admin/setting/index.php',
+		'controller' => \app\controllers\admin\AdminSettingController::class,
+		'action' => 'update',
 		'pageStyles' => ['assets/css/admin.css']
 	],
 	'notify-out-of-stock' => [

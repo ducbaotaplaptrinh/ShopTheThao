@@ -60,6 +60,79 @@ class AdminNewsController
             }
         }
     }
+    // 3. Hiển thị danh sách tin tức
+    public function index()
+    {
+        $newsList = $this->newsModel->getAllNews();
+        return [
+            'newsList' => $newsList
+        ];
+    }
+
+    // 4. Hiển thị form sửa bài viết
+    public function edit()
+    {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $news = $this->newsModel->getNewsById($id);
+
+        if (!$news) {
+            header("Location: ?page=admin-news");
+            exit;
+        }
+
+        return [
+            'news' => $news
+        ];
+    }
+
+    // 5. Xử lý cập nhật bài viết
+    public function update()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            $tieuDe = isset($_POST['tieu_de']) ? trim($_POST['tieu_de']) : '';
+            $tomTat = isset($_POST['tom_tat']) ? trim($_POST['tom_tat']) : '';
+            $noiDung = isset($_POST['noi_dung']) ? trim($_POST['noi_dung']) : '';
+            $trangThai = isset($_POST['trang_thai']) ? 1 : 0;
+
+            $slug = $this->createSlug($tieuDe);
+            $urlAnhDaiDien = "";
+
+            if (isset($_FILES['anh_dai_dien']) && $_FILES['anh_dai_dien']['error'] === UPLOAD_ERR_OK) {
+                $uploadedUrl = CloudService::uploadImage($_FILES['anh_dai_dien']);
+                if ($uploadedUrl) {
+                    $urlAnhDaiDien = $uploadedUrl;
+                }
+            }
+
+            $this->newsModel->updateNews($id, $tieuDe, $slug, $urlAnhDaiDien, $tomTat, $noiDung, $trangThai);
+            
+            header("Location: ?page=admin-news&msg=updated");
+            exit;
+        }
+    }
+
+    // 6. Xóa mềm (chuyển trạng thái về ẩn)
+    public function delete()
+    {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id > 0) {
+            $this->newsModel->deleteNews($id);
+        }
+        header("Location: ?page=admin-news&msg=deleted");
+        exit;
+    }
+
+    // 7. Đổi trạng thái Ẩn/Hiện
+    public function toggleStatus()
+    {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id > 0) {
+            $this->newsModel->toggleStatus($id);
+        }
+        header("Location: ?page=admin-news");
+        exit;
+    }
 
     // Hàm hỗ trợ tạo đường dẫn thân thiện (Slug)
     private function createSlug($str)

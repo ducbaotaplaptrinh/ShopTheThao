@@ -180,9 +180,8 @@ $displayBrands = array_slice($activeBrands, 0, 14);
     </div>
 
     <div class="brand-grid-container">
-        <!-- Center Card (Bảo Đạt Logo) -->
         <div class="center-logo-card-item">
-            <img src="assets/images/favicons/Logo.png" alt="Bảo Đạt Logo">
+            <img src="<?= htmlspecialchars($cauhinh['logo_url'] ?? 'assets/images/favicons/Logo.png') ?>" alt="Bảo Đạt Logo">
         </div>
 
         <!-- Brand Cards -->

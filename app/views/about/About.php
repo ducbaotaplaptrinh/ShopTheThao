@@ -58,7 +58,7 @@ $values = [
         <div class="container position-relative">
             <div class="row justify-content-center">
                 <div class="col-lg-8 text-center" data-reveal>
-                    <img src="assets/images/about/logo_about-removebg.png" alt="Bảo Đạt Sport" class="about-logo mb-4">
+                    <img src="<?= htmlspecialchars($cauhinh['logo_url'] ?? 'assets/images/about/logo_about-removebg.png') ?>" alt="Bảo Đạt Sport" class="about-logo mb-4">
                     <span class="about-kicker mb-3">
                         <i class="bi bi-award-fill"></i>
                         Câu chuyện thương hiệu
