@@ -38,15 +38,26 @@ class AdminSettingController
             $bank_name = isset($_POST['bank_name']) ? trim($_POST['bank_name']) : '';
             $bank_account = isset($_POST['bank_account']) ? trim($_POST['bank_account']) : '';
             $bank_owner = isset($_POST['bank_owner']) ? trim($_POST['bank_owner']) : '';
+            $text_topbar_1 = isset($_POST['text_topbar_1']) ? trim($_POST['text_topbar_1']) : '';
+            $text_topbar_2 = isset($_POST['text_topbar_2']) ? trim($_POST['text_topbar_2']) : '';
 
             $logo_url = "";
+            $logo_tab_bar_url = "";
             $qr_code_url = null; // null có nghĩa là không đổi
 
-            // Xử lý upload logo
+            // Xử lý upload logo website
             if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
                 $uploadedUrl = CloudService::uploadImage($_FILES['logo']);
                 if ($uploadedUrl) {
                     $logo_url = $uploadedUrl;
+                }
+            }
+
+            // Xử lý upload logo tab bar
+            if (isset($_FILES['logo_tab_bar']) && $_FILES['logo_tab_bar']['error'] === UPLOAD_ERR_OK) {
+                $uploadedUrl = CloudService::uploadImage($_FILES['logo_tab_bar']);
+                if ($uploadedUrl) {
+                    $logo_tab_bar_url = $uploadedUrl;
                 }
             }
 
@@ -72,7 +83,10 @@ class AdminSettingController
                 'bank_name' => $bank_name,
                 'bank_account' => $bank_account,
                 'bank_owner' => $bank_owner,
-                'logo_url' => $logo_url
+                'logo_url' => $logo_url,
+                'logo_tab_bar_url' => $logo_tab_bar_url,
+                'text_topbar_1' => $text_topbar_1,
+                'text_topbar_2' => $text_topbar_2
             ];
 
             if ($qr_code_url !== null) {

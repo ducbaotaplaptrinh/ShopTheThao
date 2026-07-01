@@ -66,6 +66,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Admin Panel | Bảo Đạt Sport') ?></title>
+    <link rel="icon" type="image/png" href="<?= htmlspecialchars($cauhinh['logo_tab_bar_url'] ?? 'assets/images/favicons/Logo.png') ?>" />
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -133,6 +134,10 @@ try {
                 <a href="?page=admin-customers" class="sidebar-menu-item <?= strpos($currentPage, 'admin-customer') === 0 ? 'active' : '' ?>">
                     <i class="bi bi-people"></i>
                     <span>Khách hàng & Hạng</span>
+                </a>
+                <a href="?page=admin-vouchers" class="sidebar-menu-item <?= strpos($currentPage, 'admin-voucher') === 0 ? 'active' : '' ?>">
+                    <i class="bi bi-ticket-perforated"></i>
+                    <span>Quản lý Voucher</span>
                 </a>
 
                 <div class="text-uppercase text-muted fw-bold mb-2 px-3 mt-4" style="font-size: 0.75rem; letter-spacing: 1px;">Hệ thống</div>

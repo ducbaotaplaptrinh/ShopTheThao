@@ -62,7 +62,7 @@ class OrderModel extends Model
 
             $sqlCoupon = "SELECT m.* FROM ma_giam_gia m
                           LEFT JOIN hang_thanh_vien ht ON m.ma_hang = ht.id
-                          WHERE (m.ma_hang = 0 OR ht.muc_chi_tieu_toi_thieu <= :user_tieu_thieu)
+                          WHERE (m.ma_hang IS NULL OR m.ma_hang = 0 OR ht.muc_chi_tieu_toi_thieu <= :user_tieu_thieu)
                           AND m.don_hang_toi_thieu <= :total
                           AND m.trang_thai = 1 
                           AND m.so_luong_da_dung < m.tong_so_luong
@@ -94,7 +94,7 @@ class OrderModel extends Model
 
             $sqlCoupon = "SELECT m.* FROM ma_giam_gia m
                           LEFT JOIN hang_thanh_vien ht ON m.ma_hang = ht.id
-                          WHERE (m.ma_hang = 0 OR ht.muc_chi_tieu_toi_thieu <= :user_tieu_thieu)
+                          WHERE (m.ma_hang IS NULL OR m.ma_hang = 0 OR ht.muc_chi_tieu_toi_thieu <= :user_tieu_thieu)
                           AND m.ma_code = :code
                           AND m.don_hang_toi_thieu <= :total
                           AND m.trang_thai = 1 

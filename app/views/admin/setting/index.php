@@ -49,6 +49,14 @@
                                 <label class="form-label fw-bold">Link Messenger Facebook</label>
                                 <input type="text" name="facebook_link" class="form-control" value="<?= htmlspecialchars($setting['facebook_link']) ?>" placeholder="Ví dụ: https://m.me/username" required>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Chữ trên thanh topbar 1 (Giao hàng)</label>
+                                <input type="text" name="text_topbar_1" class="form-control" value="<?= htmlspecialchars($setting['text_topbar_1'] ?? 'Giao hàng toàn quốc') ?>" placeholder="Ví dụ: Giao hàng toàn quốc" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Chữ trên thanh topbar 2 (Bảo hành)</label>
+                                <input type="text" name="text_topbar_2" class="form-control" value="<?= htmlspecialchars($setting['text_topbar_2'] ?? 'Chính hãng - Bảo hành rõ ràng') ?>" placeholder="Ví dụ: Chính hãng - Bảo hành rõ ràng" required>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -134,6 +142,26 @@
                     </div>
                 </div>
 
+                <div class="card shadow-sm border-0 rounded-3 mb-4">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h5 class="mb-0 text-dark"><i class="bi bi-bookmark-star me-2"></i>Logo Tab Bar (Favicon)</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-4 bg-light p-3 rounded-3 d-flex align-items-center justify-content-center" style="min-height: 100px;">
+                            <?php if (!empty($setting['logo_tab_bar_url'])): ?>
+                                <img id="logoTabBarPreview" src="<?= htmlspecialchars($setting['logo_tab_bar_url']) ?>" alt="Favicon Preview" style="max-width: 32px; max-height: 32px; object-fit: contain;">
+                            <?php else: ?>
+                                <div class="text-muted" id="logoTabBarPlaceholder">Chưa có Logo Tab Bar</div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chọn tệp Favicon mới</label>
+                            <input type="file" name="logo_tab_bar" class="form-control" accept="image/*" id="logoTabBarInput">
+                            <small class="text-muted d-block mt-1">Định dạng khuyên dùng: PNG/ICO vuông (32x32 hoặc 16x16).</small>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card shadow-sm border-0 rounded-3">
                     <div class="card-body">
                         <button type="submit" class="btn btn-primary w-100 py-2 fw-bold"><i class="bi bi-save me-2"></i>Lưu Thay Đổi</button>
@@ -154,6 +182,24 @@
             const reader = new FileReader();
             reader.onload = function(event) {
                 document.getElementById('logoPreview').src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Preview logo tab bar trước khi upload
+    document.getElementById('logoTabBarInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const preview = document.getElementById('logoTabBarPreview');
+                if (preview) {
+                    preview.src = event.target.result;
+                } else {
+                    const container = document.getElementById('logoTabBarPlaceholder').parentNode;
+                    container.innerHTML = `<img id="logoTabBarPreview" src="${event.target.result}" alt="Favicon Preview" style="max-width: 32px; max-height: 32px; object-fit: contain;">`;
+                }
             }
             reader.readAsDataURL(file);
         }

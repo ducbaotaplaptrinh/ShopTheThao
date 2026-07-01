@@ -13,20 +13,18 @@ $page = $_GET['page'] ?? "";
             <div
                 class="d-flex align-items-center gap-3 small text-white-50">
                 <span><a
-                        href="tel:0900123456"
-                        class="bi bi-telephone me-1 text-decoration-none text-white-50"><span class="mx-2">0900 123 456</span></a>
+                        href="tel:<?= str_replace(' ', '', $cauhinh['sdt'] ?? '0900123456') ?>"
+                        class="bi bi-telephone me-1 text-decoration-none text-white-50"><span class="mx-2"><?= htmlspecialchars($cauhinh['sdt'] ?? '0900 123 456') ?></span></a>
                 </span>
                 <span><a
-                        href="mailto:support@sportpro.vn"
-                        class="bi bi-envelope me-1 text-decoration-none text-white-50"><span class="mx-2">support@sportpro.vn</span></a>
+                        href="mailto:<?= htmlspecialchars($cauhinh['email'] ?? 'support@sportpro.vn') ?>"
+                        class="bi bi-envelope me-1 text-decoration-none text-white-50"><span class="mx-2"><?= htmlspecialchars($cauhinh['email'] ?? 'support@sportpro.vn') ?></span></a>
                 </span>
             </div>
             <div
                 class="d-flex align-items-center gap-3 small text-white-50">
-                <span><i class="bi bi-truck me-1"></i> Giao hàng toàn
-                    quốc</span>
-                <span><i class="bi bi-shield-check me-1"></i> Chính hãng
-                    - Bảo hành rõ ràng</span>
+                <span><i class="bi bi-truck me-1"></i> <?= htmlspecialchars($cauhinh['text_topbar_1'] ?? 'Giao hàng toàn quốc') ?></span>
+                <span><i class="bi bi-shield-check me-1"></i> <?= htmlspecialchars($cauhinh['text_topbar_2'] ?? 'Chính hãng - Bảo hành rõ ràng') ?></span>
             </div>
         </div>
     </div>

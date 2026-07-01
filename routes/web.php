@@ -462,6 +462,55 @@ return [
 		'action' => 'toggleStatus',
 		'pageStyles' => ['assets/css/admin.css']
 	],
+	'admin-vouchers' => [
+		'title' => 'Quản lý Voucher | Quản trị',
+		'view' => 'admin/voucher/index.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'index',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-create' => [
+		'title' => 'Thêm Voucher mới | Quản trị',
+		'view' => 'admin/voucher/create.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'create',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-store' => [
+		'title' => 'Lưu Voucher mới | Quản trị',
+		'view' => 'admin/voucher/create.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'store',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-edit' => [
+		'title' => 'Sửa Voucher | Quản trị',
+		'view' => 'admin/voucher/edit.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'edit',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-update' => [
+		'title' => 'Cập nhật Voucher | Quản trị',
+		'view' => 'admin/voucher/index.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'update',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-delete' => [
+		'title' => 'Xóa Voucher | Quản trị',
+		'view' => 'admin/voucher/index.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'delete',
+		'pageStyles' => ['assets/css/admin.css']
+	],
+	'admin-voucher-toggle' => [
+		'title' => 'Đổi trạng thái Voucher',
+		'view' => 'errors/404.php',
+		'controller' => \app\controllers\admin\AdminVoucherController::class,
+		'action' => 'toggleStatus',
+		'pageStyles' => ['assets/css/admin.css']
+	],
 	'admin-setting' => [
 		'title' => 'Quản lý Giao diện | Quản trị',
 		'view' => 'admin/setting/index.php',
