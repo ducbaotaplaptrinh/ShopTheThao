@@ -111,6 +111,22 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="gioi_han_su_dung_tung_user" class="form-label fw-bold">Giới hạn mỗi tài khoản</label>
+                                <input type="number" name="gioi_han_su_dung_tung_user" id="gioi_han_su_dung_tung_user" class="form-control" 
+                                       min="0" value="0">
+                                <div class="form-text">Số lần tối đa một tài khoản được dùng mã này (0 là không giới hạn).</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="kieu_hien_thi" class="form-label fw-bold">Kiểu hiển thị / Áp dụng</label>
+                                <select name="kieu_hien_thi" id="kieu_hien_thi" class="form-select">
+                                    <option value="cong_khai">Công khai (Tất cả mọi người đều thấy)</option>
+                                    <option value="ca_nhan">Cá nhân (Chỉ hiển thị cho người được Admin tặng)</option>
+                                </select>
+                                <div class="form-text">Chọn "Cá nhân" nếu muốn dùng cho chiến dịch tặng quà riêng.</div>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label fw-bold">Trạng thái hoạt động</label>
                                 <div class="form-check form-switch pt-1">
                                     <input class="form-check-input" type="checkbox" name="trang_thai" id="trang_thai" checked value="1">

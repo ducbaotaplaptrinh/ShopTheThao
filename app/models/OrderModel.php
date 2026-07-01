@@ -62,19 +62,50 @@ class OrderModel extends Model
 
             $sqlCoupon = "SELECT m.* FROM ma_giam_gia m
                           LEFT JOIN hang_thanh_vien ht ON m.ma_hang = ht.id
-                          WHERE (m.ma_hang IS NULL OR m.ma_hang = 0 OR ht.muc_chi_tieu_toi_thieu <= :user_tieu_thieu)
+                          WHERE (
+                              -- Voucher công khai
+                              m.kieu_hien_thi = 'cong_khai'
+                              -- HOẶC voucher cá nhân được gán cho user hiện tại và chưa dùng
+                              OR (m.kieu_hien_thi = 'ca_nhan' AND EXISTS (SELECT 1 FROM vi_ma_giam_gia WHERE ma_giam_gia = m.id AND ma_nguoi_dung = :user_id AND da_su_dung = 0))
+                          )
+                          AND (m.ma_hang IS NULL OR m.ma_hang = 0 OR ht.muc_chi_tieu_toi_thieu <= :user_tieu_thieu)
                           AND m.don_hang_toi_thieu <= :total
                           AND m.trang_thai = 1 
                           AND m.so_luong_da_dung < m.tong_so_luong
-                          AND m.ngay_bat_dau <= NOW() 
-                          AND m.ngay_ket_thuc >= NOW()
+                          AND m.ngay_bat_dau <= :now 
+                          AND m.ngay_ket_thuc >= :now
                           ORDER BY m.gia_tri_giam DESC";
             $stmtCoupon = $this->conn->prepare($sqlCoupon);
             $stmtCoupon->execute([
+                'user_id' => $userId,
                 'user_tieu_thieu' => $userTieuThieu,
-                'total' => $totalPayment
+                'total' => $totalPayment,
+                'now' => date('Y-m-d H:i:s')
             ]);
-            return $stmtCoupon->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            $coupons = $stmtCoupon->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+            // Lọc theo giới hạn sử dụng của từng user
+            $filteredCoupons = [];
+            foreach ($coupons as $coupon) {
+                $limit = (int)($coupon['gioi_han_su_dung_tung_user'] ?? 0);
+                if ($limit > 0) {
+                    $sqlCount = "SELECT COUNT(*) FROM don_hang 
+                                 WHERE ma_nguoi_dung = :user_id 
+                                   AND ma_giam_gia = :code 
+                                   AND trang_thai_don_hang != 'da_huy'";
+                    $stmtCount = $this->conn->prepare($sqlCount);
+                    $stmtCount->execute([
+                        'user_id' => $userId,
+                        'code' => $coupon['ma_code']
+                    ]);
+                    $userUsedCount = (int)$stmtCount->fetchColumn();
+                    if ($userUsedCount >= $limit) {
+                        continue;
+                    }
+                }
+                $filteredCoupons[] = $coupon;
+            }
+            return $filteredCoupons;
         }
         return [];
     }
@@ -94,21 +125,49 @@ class OrderModel extends Model
 
             $sqlCoupon = "SELECT m.* FROM ma_giam_gia m
                           LEFT JOIN hang_thanh_vien ht ON m.ma_hang = ht.id
-                          WHERE (m.ma_hang IS NULL OR m.ma_hang = 0 OR ht.muc_chi_tieu_toi_thieu <= :user_tieu_thieu)
+                          WHERE (
+                              -- Voucher công khai
+                              m.kieu_hien_thi = 'cong_khai'
+                              -- HOẶC voucher cá nhân được gán cho user hiện tại và chưa dùng
+                              OR (m.kieu_hien_thi = 'ca_nhan' AND EXISTS (SELECT 1 FROM vi_ma_giam_gia WHERE ma_giam_gia = m.id AND ma_nguoi_dung = :user_id AND da_su_dung = 0))
+                          )
+                          AND (m.ma_hang IS NULL OR m.ma_hang = 0 OR ht.muc_chi_tieu_toi_thieu <= :user_tieu_thieu)
                           AND m.ma_code = :code
                           AND m.don_hang_toi_thieu <= :total
                           AND m.trang_thai = 1 
                           AND m.so_luong_da_dung < m.tong_so_luong
-                          AND m.ngay_bat_dau <= NOW() 
-                          AND m.ngay_ket_thuc >= NOW()
+                          AND m.ngay_bat_dau <= :now 
+                          AND m.ngay_ket_thuc >= :now
                           LIMIT 1";
             $stmtCoupon = $this->conn->prepare($sqlCoupon);
             $stmtCoupon->execute([
+                'user_id' => $userId,
                 'user_tieu_thieu' => $userTieuThieu,
                 'code' => $code,
-                'total' => $totalPayment
+                'total' => $totalPayment,
+                'now' => date('Y-m-d H:i:s')
             ]);
-            return $stmtCoupon->fetch(PDO::FETCH_ASSOC);
+            $coupon = $stmtCoupon->fetch(PDO::FETCH_ASSOC);
+
+            if ($coupon) {
+                $limit = (int)($coupon['gioi_han_su_dung_tung_user'] ?? 0);
+                if ($limit > 0) {
+                    $sqlCount = "SELECT COUNT(*) FROM don_hang 
+                                 WHERE ma_nguoi_dung = :user_id 
+                                   AND ma_giam_gia = :code 
+                                   AND trang_thai_don_hang != 'da_huy'";
+                    $stmtCount = $this->conn->prepare($sqlCount);
+                    $stmtCount->execute([
+                        'user_id' => $userId,
+                        'code' => $code
+                    ]);
+                    $userUsedCount = (int)$stmtCount->fetchColumn();
+                    if ($userUsedCount >= $limit) {
+                        return false;
+                    }
+                }
+                return $coupon;
+            }
         }
         return false;
     }
@@ -152,11 +211,13 @@ class OrderModel extends Model
             $sqlOrder = "INSERT INTO don_hang (
                             ma_nguoi_dung, ma_don_hang, ho_ten_nguoi_nhan, so_dien_thoai, email, 
                             dia_chi_giao_hang, ghi_chu, tong_tien_hang, phi_van_chuyen, tien_giam_gia, 
-                            tong_thanh_toan, phuong_thuc_thanh_toan, trang_thai_thanh_toan, trang_thai_don_hang
+                            tong_thanh_toan, phuong_thuc_thanh_toan, trang_thai_thanh_toan, trang_thai_don_hang,
+                            ma_giam_gia
                          ) VALUES (
                             :user_id, :order_code, :recipient_name, :phone, :email, 
                             :address, :notes, :subtotal, :shipping, :discount, 
-                            :total, :payment_method, :payment_status, :order_status
+                            :total, :payment_method, :payment_status, :order_status,
+                            :coupon_code
                          )";
 
             $stmtOrder = $this->conn->prepare($sqlOrder);
@@ -174,7 +235,8 @@ class OrderModel extends Model
                 'total' => $order->getTong_thanh_toan(),
                 'payment_method' => $order->getPhuong_thuc_thanh_toan(),
                 'payment_status' => $order->getTrang_thai_thanh_toan(),
-                'order_status' => $order->getTrang_thai_don_hang()
+                'order_status' => $order->getTrang_thai_don_hang(),
+                'coupon_code' => !empty($couponCode) ? $couponCode : null
             ]);
 
             $orderId = (int) $this->conn->lastInsertId();
@@ -269,6 +331,15 @@ class OrderModel extends Model
             if (!empty($couponCode)) {
                 $sqlUpdateCoupon = "UPDATE ma_giam_gia SET so_luong_da_dung = so_luong_da_dung + 1 WHERE ma_code = :code";
                 $this->conn->prepare($sqlUpdateCoupon)->execute(['code' => $couponCode]);
+
+                // Đánh dấu đã sử dụng trong ví voucher của user (nếu có)
+                $sqlUpdateWallet = "UPDATE vi_ma_giam_gia SET da_su_dung = 1, ngay_su_dung = NOW() 
+                                    WHERE ma_nguoi_dung = :user_id 
+                                      AND ma_giam_gia = (SELECT id FROM ma_giam_gia WHERE ma_code = :code LIMIT 1)";
+                $this->conn->prepare($sqlUpdateWallet)->execute([
+                    'user_id' => $userId,
+                    'code' => $couponCode
+                ]);
             }
 
             $this->conn->commit();
@@ -429,6 +500,22 @@ class OrderModel extends Model
                 }
             }
 
+            // 3. Hoàn lại lượt dùng voucher (nếu có)
+            $couponCode = $order->getMa_giam_gia();
+            if (!empty($couponCode)) {
+                $sqlUpdateCoupon = "UPDATE ma_giam_gia SET so_luong_da_dung = GREATEST(0, so_luong_da_dung - 1) WHERE ma_code = :code";
+                $this->conn->prepare($sqlUpdateCoupon)->execute(['code' => $couponCode]);
+
+                // Hoàn lại trạng thái chưa sử dụng trong ví voucher
+                $sqlUpdateWallet = "UPDATE vi_ma_giam_gia SET da_su_dung = 0, ngay_su_dung = NULL 
+                                    WHERE ma_nguoi_dung = :user_id 
+                                      AND ma_giam_gia = (SELECT id FROM ma_giam_gia WHERE ma_code = :code LIMIT 1)";
+                $this->conn->prepare($sqlUpdateWallet)->execute([
+                    'user_id' => $userId,
+                    'code' => $couponCode
+                ]);
+            }
+
             $this->conn->commit();
             return true;
         } catch (Exception $e) {
@@ -462,47 +549,79 @@ class OrderModel extends Model
     }
 
     /**
-     * Kiểm tra xem khách hàng đã đánh giá sản phẩm này chưa
+     * Kiểm tra xem khách hàng đã đánh giá sản phẩm này chưa (theo đơn hàng nếu có)
      */
-    public function hasReviewedProduct(int $userId, int $productId): bool
+    public function hasReviewedProduct(int $userId, int $productId, ?int $orderId = null): bool
     {
-        $sql = "SELECT COUNT(*) FROM danh_gia_san_pham WHERE ma_nguoi_dung = :uid AND ma_san_pham = :pid";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute(['uid' => $userId, 'pid' => $productId]);
+        if ($orderId !== null) {
+            $sql = "SELECT COUNT(*) FROM danh_gia_san_pham WHERE ma_nguoi_dung = :uid AND ma_san_pham = :pid AND ma_don_hang = :order_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute(['uid' => $userId, 'pid' => $productId, 'order_id' => $orderId]);
+        } else {
+            $sql = "SELECT COUNT(*) FROM danh_gia_san_pham WHERE ma_nguoi_dung = :uid AND ma_san_pham = :pid";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute(['uid' => $userId, 'pid' => $productId]);
+        }
         return (int) $stmt->fetchColumn() > 0;
     }
 
     /**
-     * Lưu đánh giá sản phẩm mới
+     * Lưu đánh giá sản phẩm mới (có gắn với đơn hàng)
      */
-    public function submitProductReview(int $userId, int $productId, int $diemSo, string $binhLuan): bool
+    public function submitProductReview(int $userId, int $productId, int $diemSo, string $binhLuan, ?int $orderId = null): bool
     {
         // Kiểm tra xem khách hàng có thực sự đã mua sản phẩm này trong một đơn hàng hoàn thành hay chưa
-        $sqlCheckBuy = "SELECT COUNT(*) 
-                        FROM chi_tiet_don_hang ctdh
-                        JOIN don_hang dh ON ctdh.ma_don_hang = dh.id
-                        WHERE dh.ma_nguoi_dung = :uid 
-                          AND ctdh.ma_san_pham = :pid 
-                          AND dh.trang_thai_don_hang = 'hoan_thanh'";
-        $stmtCheck = $this->conn->prepare($sqlCheckBuy);
-        $stmtCheck->execute(['uid' => $userId, 'pid' => $productId]);
+        if ($orderId !== null) {
+            $sqlCheckBuy = "SELECT COUNT(*) 
+                            FROM chi_tiet_don_hang ctdh
+                            JOIN don_hang dh ON ctdh.ma_don_hang = dh.id
+                            WHERE dh.ma_nguoi_dung = :uid 
+                              AND ctdh.ma_san_pham = :pid 
+                              AND dh.trang_thai_don_hang = 'hoan_thanh'
+                              AND dh.id = :order_id";
+            $stmtCheck = $this->conn->prepare($sqlCheckBuy);
+            $stmtCheck->execute(['uid' => $userId, 'pid' => $productId, 'order_id' => $orderId]);
+        } else {
+            $sqlCheckBuy = "SELECT COUNT(*) 
+                            FROM chi_tiet_don_hang ctdh
+                            JOIN don_hang dh ON ctdh.ma_don_hang = dh.id
+                            WHERE dh.ma_nguoi_dung = :uid 
+                              AND ctdh.ma_san_pham = :pid 
+                              AND dh.trang_thai_don_hang = 'hoan_thanh'";
+            $stmtCheck = $this->conn->prepare($sqlCheckBuy);
+            $stmtCheck->execute(['uid' => $userId, 'pid' => $productId]);
+        }
+
         if ((int) $stmtCheck->fetchColumn() <= 0) {
             throw new Exception("Bạn chỉ có thể đánh giá những sản phẩm đã mua và giao thành công.");
         }
 
         // Kiểm tra xem đã đánh giá chưa
-        if ($this->hasReviewedProduct($userId, $productId)) {
-            throw new Exception("Bạn đã đánh giá sản phẩm này rồi.");
+        if ($this->hasReviewedProduct($userId, $productId, $orderId)) {
+            throw new Exception("Bạn đã đánh giá sản phẩm này trong đơn hàng tương ứng rồi.");
         }
 
-        $sql = "INSERT INTO danh_gia_san_pham (ma_nguoi_dung, ma_san_pham, diem_so, binh_luan, trang_thai, ngay_tao)
-                VALUES (:uid, :pid, :score, :comment, 1, NOW())";
+        $sql = "INSERT INTO danh_gia_san_pham (ma_nguoi_dung, ma_san_pham, diem_so, binh_luan, trang_thai, ngay_tao, ma_don_hang)
+                VALUES (:uid, :pid, :score, :comment, 1, NOW(), :order_id)";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([
             'uid' => $userId,
             'pid' => $productId,
             'score' => $diemSo,
-            'comment' => !empty($binhLuan) ? $binhLuan : null
+            'comment' => !empty($binhLuan) ? $binhLuan : null,
+            'order_id' => $orderId
         ]);
+    }
+
+    /**
+     * Lấy thông tin đánh giá sản phẩm của người dùng trong đơn hàng cụ thể
+     */
+    public function getProductReviewForOrder(int $userId, int $productId, int $orderId)
+    {
+        $sql = "SELECT diem_so, binh_luan, ngay_tao FROM danh_gia_san_pham 
+                WHERE ma_nguoi_dung = :uid AND ma_san_pham = :pid AND ma_don_hang = :order_id LIMIT 1";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['uid' => $userId, 'pid' => $productId, 'order_id' => $orderId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

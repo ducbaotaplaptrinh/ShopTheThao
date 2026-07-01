@@ -136,8 +136,17 @@ class OrderController
         if (!empty($ma_code_su_dung)) {
             $coupon = $this->orderModel->validateCoupon($ma_code_su_dung, (int)$_SESSION['user']['id'], (float)$subtotal);
             if ($coupon) {
-                // Based on UI JS assumption, the discount is fixed amount (gia_tri_giam)
-                $discount = (float)$coupon['gia_tri_giam'];
+                if ($coupon['loai_giam_gia'] === 'phan_tram') {
+                    $discount = ($subtotal * (float)$coupon['gia_tri_giam']) / 100;
+                    if (!empty($coupon['muc_giam_toi_da']) && (float)$coupon['muc_giam_toi_da'] > 0) {
+                        $maxDiscount = (float)$coupon['muc_giam_toi_da'];
+                        if ($discount > $maxDiscount) {
+                            $discount = $maxDiscount;
+                        }
+                    }
+                } else {
+                    $discount = (float)$coupon['gia_tri_giam'];
+                }
             } else {
                 $_SESSION['order_error'] = 'Mã giảm giá không hợp lệ hoặc không đủ điều kiện!';
                 header("Location: ?page=checkout");
@@ -343,6 +352,7 @@ class OrderController
 
         $userId = (int)$_SESSION['user']['id'];
         $reviews = $_POST['reviews'] ?? [];
+        $orderId = isset($_POST['ma_don_hang']) ? (int)$_POST['ma_don_hang'] : null;
 
         if (empty($reviews) || !is_array($reviews)) {
             $_SESSION['order_error'] = 'Dữ liệu đánh giá không hợp lệ.';
@@ -364,7 +374,7 @@ class OrderController
             }
 
             try {
-                $this->orderModel->submitProductReview($userId, $productId, $diemSo, $binhLuan);
+                $this->orderModel->submitProductReview($userId, $productId, $diemSo, $binhLuan, $orderId);
                 $successCount++;
             } catch (\Exception $e) {
                 $errorMsg = $e->getMessage();

@@ -314,6 +314,13 @@ return [
 		'action' => 'toggleStatus',
 		'pageStyles' => ['assets/css/admin.css']
 	],
+	'admin-customer-gift-voucher' => [
+		'title' => 'Tặng Voucher cho khách hàng',
+		'view' => 'admin/customer/Index.php',
+		'controller' => \app\controllers\admin\AdminCustomerController::class,
+		'action' => 'giftVoucher',
+		'pageStyles' => ['assets/css/admin.css']
+	],
 	'admin-product-edit' => [
 		'title' => 'Sửa Sản phẩm | Quản trị',
 		'view' => 'admin/product/Edit.php',

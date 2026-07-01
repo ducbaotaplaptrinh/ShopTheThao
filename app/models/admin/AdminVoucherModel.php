@@ -41,11 +41,11 @@ class AdminVoucherModel extends Model
         $sql = "INSERT INTO ma_giam_gia (
                     ma_code, ma_hang, tieu_de, mo_ta, loai_giam_gia, 
                     gia_tri_giam, don_hang_toi_thieu, muc_giam_toi_da, 
-                    tong_so_luong, so_luong_da_dung, ngay_bat_dau, ngay_ket_thuc, trang_thai
+                    tong_so_luong, so_luong_da_dung, gioi_han_su_dung_tung_user, ngay_bat_dau, ngay_ket_thuc, trang_thai, kieu_hien_thi
                 ) VALUES (
                     :ma_code, :ma_hang, :tieu_de, :mo_ta, :loai_giam_gia, 
                     :gia_tri_giam, :don_hang_toi_thieu, :muc_giam_toi_da, 
-                    :tong_so_luong, 0, :ngay_bat_dau, :ngay_ket_thuc, :trang_thai
+                    :tong_so_luong, 0, :gioi_han_su_dung_tung_user, :ngay_bat_dau, :ngay_ket_thuc, :trang_thai, :kieu_hien_thi
                 )";
 
         $stmt = $this->conn->prepare($sql);
@@ -59,9 +59,11 @@ class AdminVoucherModel extends Model
             'don_hang_toi_thieu' => $data['don_hang_toi_thieu'] ?? 0.00,
             'muc_giam_toi_da' => $data['muc_giam_toi_da'] ?? null,
             'tong_so_luong' => $data['tong_so_luong'] ?? 0,
+            'gioi_han_su_dung_tung_user' => $data['gioi_han_su_dung_tung_user'] ?? 0,
             'ngay_bat_dau' => $data['ngay_bat_dau'],
             'ngay_ket_thuc' => $data['ngay_ket_thuc'],
-            'trang_thai' => $data['trang_thai'] ? 1 : 0
+            'trang_thai' => $data['trang_thai'] ? 1 : 0,
+            'kieu_hien_thi' => $data['kieu_hien_thi'] ?? 'cong_khai'
         ]);
     }
 
@@ -77,9 +79,11 @@ class AdminVoucherModel extends Model
                     don_hang_toi_thieu = :don_hang_toi_thieu,
                     muc_giam_toi_da = :muc_giam_toi_da,
                     tong_so_luong = :tong_so_luong,
+                    gioi_han_su_dung_tung_user = :gioi_han_su_dung_tung_user,
                     ngay_bat_dau = :ngay_bat_dau,
                     ngay_ket_thuc = :ngay_ket_thuc,
-                    trang_thai = :trang_thai
+                    trang_thai = :trang_thai,
+                    kieu_hien_thi = :kieu_hien_thi
                 WHERE id = :id";
 
         $stmt = $this->conn->prepare($sql);
@@ -94,9 +98,11 @@ class AdminVoucherModel extends Model
             'don_hang_toi_thieu' => $data['don_hang_toi_thieu'] ?? 0.00,
             'muc_giam_toi_da' => $data['muc_giam_toi_da'] ?? null,
             'tong_so_luong' => $data['tong_so_luong'] ?? 0,
+            'gioi_han_su_dung_tung_user' => $data['gioi_han_su_dung_tung_user'] ?? 0,
             'ngay_bat_dau' => $data['ngay_bat_dau'],
             'ngay_ket_thuc' => $data['ngay_ket_thuc'],
-            'trang_thai' => $data['trang_thai'] ? 1 : 0
+            'trang_thai' => $data['trang_thai'] ? 1 : 0,
+            'kieu_hien_thi' => $data['kieu_hien_thi'] ?? 'cong_khai'
         ]);
     }
 

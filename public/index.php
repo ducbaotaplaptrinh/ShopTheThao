@@ -1,4 +1,7 @@
 <?php
+// Thiết lập múi giờ Việt Nam
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+
 // Kích hoạt thông báo lỗi tối đa để dễ bắt bệnh
 ini_set('display_errors', '1');
 error_reporting(E_ALL);

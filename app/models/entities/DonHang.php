@@ -23,6 +23,7 @@ class DonHang
     private string $trang_thai_don_hang = "cho_xac_nhan";
     private ?DateTime $ngay_tao = null;
     private ?DateTime $ngay_cap_nhat = null;
+    private ?string $ma_giam_gia = null;
 
     public function __construct(array $data = [])
     {
@@ -42,6 +43,7 @@ class DonHang
             $this->phuong_thuc_thanh_toan = $data['phuong_thuc_thanh_toan'] ?? "cod";
             $this->trang_thai_thanh_toan = $data['trang_thai_thanh_toan'] ?? "chua_thanh_toan";
             $this->trang_thai_don_hang = $data['trang_thai_don_hang'] ?? "cho_xac_nhan";
+            $this->ma_giam_gia = $data['ma_giam_gia'] ?? null;
             
             $this->ngay_tao = isset($data['ngay_tao']) && !empty($data['ngay_tao'])
                 ? new DateTime($data['ngay_tao']) : null;
@@ -234,6 +236,17 @@ class DonHang
     public function setNgay_cap_nhat(?DateTime $ngay_cap_nhat): self
     {
         $this->ngay_cap_nhat = $ngay_cap_nhat;
+        return $this;
+    }
+
+    public function getMa_giam_gia(): ?string
+    {
+        return $this->ma_giam_gia;
+    }
+
+    public function setMa_giam_gia(?string $ma_giam_gia): self
+    {
+        $this->ma_giam_gia = $ma_giam_gia;
         return $this;
     }
 }

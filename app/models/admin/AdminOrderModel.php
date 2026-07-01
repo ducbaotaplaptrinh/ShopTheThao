@@ -83,13 +83,43 @@ class AdminOrderModel extends Model
             $stmt = $this->conn->prepare("UPDATE don_hang SET trang_thai_don_hang = ? WHERE id = ?");
             $stmt->execute([$trangThaiMoi, $id]);
 
-            // 2. Xử lý kho hàng
+            // 2. Xử lý kho hàng và lượt dùng voucher
             if ($trangThaiMoi === 'da_huy' && $trangThaiCu !== 'da_huy') {
                 // Hủy đơn hàng: Hoàn kho
                 $this->hoanKho($id);
+
+                // Hoàn lại lượt dùng voucher (nếu có)
+                $order = $this->getOrderById($id);
+                $couponCode = $order['ma_giam_gia'] ?? '';
+                if (!empty($couponCode)) {
+                    $stmtCoupon = $this->conn->prepare("UPDATE ma_giam_gia SET so_luong_da_dung = GREATEST(0, so_luong_da_dung - 1) WHERE ma_code = ?");
+                    $stmtCoupon->execute([$couponCode]);
+
+                    // Hoàn lại trong ví voucher
+                    $stmtWallet = $this->conn->prepare("UPDATE vi_ma_giam_gia SET da_su_dung = 0, ngay_su_dung = NULL WHERE ma_nguoi_dung = ? AND ma_giam_gia = (SELECT id FROM ma_giam_gia WHERE ma_code = ? LIMIT 1)");
+                    $stmtWallet->execute([$order['ma_nguoi_dung'], $couponCode]);
+                }
             } elseif ($trangThaiMoi !== 'da_huy' && $trangThaiCu === 'da_huy') {
                 // Khôi phục đơn hàng từ trạng thái Hủy: Trừ kho trở lại
                 $this->truKho($id);
+
+                // Trừ lại lượt dùng voucher (nếu có)
+                $order = $this->getOrderById($id);
+                $couponCode = $order['ma_giam_gia'] ?? '';
+                if (!empty($couponCode)) {
+                    $stmtCheckCoupon = $this->conn->prepare("SELECT so_luong_da_dung, tong_so_luong FROM ma_giam_gia WHERE ma_code = ?");
+                    $stmtCheckCoupon->execute([$couponCode]);
+                    $couponInfo = $stmtCheckCoupon->fetch(PDO::FETCH_ASSOC);
+                    if ($couponInfo && $couponInfo['so_luong_da_dung'] >= $couponInfo['tong_so_luong']) {
+                        throw new \Exception("Không thể khôi phục đơn hàng vì mã giảm giá '{$couponCode}' đã hết lượt sử dụng trên hệ thống.");
+                    }
+                    $stmtCoupon = $this->conn->prepare("UPDATE ma_giam_gia SET so_luong_da_dung = so_luong_da_dung + 1 WHERE ma_code = ?");
+                    $stmtCoupon->execute([$couponCode]);
+
+                    // Đánh dấu đã dùng trong ví voucher
+                    $stmtWallet = $this->conn->prepare("UPDATE vi_ma_giam_gia SET da_su_dung = 1, ngay_su_dung = NOW() WHERE ma_nguoi_dung = ? AND ma_giam_gia = (SELECT id FROM ma_giam_gia WHERE ma_code = ? LIMIT 1)");
+                    $stmtWallet->execute([$order['ma_nguoi_dung'], $couponCode]);
+                }
             }
 
             $this->conn->commit();

@@ -40,10 +40,12 @@ class AdminVoucherController
             $don_hang_toi_thieu = isset($_POST['don_hang_toi_thieu']) ? (float)$_POST['don_hang_toi_thieu'] : 0.00;
             $muc_giam_toi_da = (isset($_POST['muc_giam_toi_da']) && $_POST['muc_giam_toi_da'] !== '') ? (float)$_POST['muc_giam_toi_da'] : null;
             $tong_so_luong = isset($_POST['tong_so_luong']) ? (int)$_POST['tong_so_luong'] : 0;
+            $gioi_han_su_dung_tung_user = isset($_POST['gioi_han_su_dung_tung_user']) ? (int)$_POST['gioi_han_su_dung_tung_user'] : 0;
             $ngay_bat_dau = isset($_POST['ngay_bat_dau']) ? trim($_POST['ngay_bat_dau']) : '';
             $ngay_ket_thuc = isset($_POST['ngay_ket_thuc']) ? trim($_POST['ngay_ket_thuc']) : '';
             $ma_hang = isset($_POST['ma_hang']) ? (int)$_POST['ma_hang'] : 0;
             $trang_thai = isset($_POST['trang_thai']) ? 1 : 0;
+            $kieu_hien_thi = isset($_POST['kieu_hien_thi']) ? trim($_POST['kieu_hien_thi']) : 'cong_khai';
 
             // Simple validations
             $errors = [];
@@ -69,6 +71,10 @@ class AdminVoucherController
                 $errors[] = "Tổng số lượng không được âm.";
             }
 
+            if ($gioi_han_su_dung_tung_user < 0) {
+                $errors[] = "Giới hạn sử dụng mỗi user không được âm.";
+            }
+
             if (empty($ngay_bat_dau) || empty($ngay_ket_thuc)) {
                 $errors[] = "Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.";
             } elseif (strtotime($ngay_ket_thuc) <= strtotime($ngay_bat_dau)) {
@@ -91,9 +97,11 @@ class AdminVoucherController
                 'don_hang_toi_thieu' => $don_hang_toi_thieu,
                 'muc_giam_toi_da' => $muc_giam_toi_da,
                 'tong_so_luong' => $tong_so_luong,
+                'gioi_han_su_dung_tung_user' => $gioi_han_su_dung_tung_user,
                 'ngay_bat_dau' => $ngay_bat_dau,
                 'ngay_ket_thuc' => $ngay_ket_thuc,
-                'trang_thai' => $trang_thai
+                'trang_thai' => $trang_thai,
+                'kieu_hien_thi' => $kieu_hien_thi
             ];
 
             if ($this->model->createVoucher($data)) {
@@ -136,10 +144,12 @@ class AdminVoucherController
             $don_hang_toi_thieu = isset($_POST['don_hang_toi_thieu']) ? (float)$_POST['don_hang_toi_thieu'] : 0.00;
             $muc_giam_toi_da = (isset($_POST['muc_giam_toi_da']) && $_POST['muc_giam_toi_da'] !== '') ? (float)$_POST['muc_giam_toi_da'] : null;
             $tong_so_luong = isset($_POST['tong_so_luong']) ? (int)$_POST['tong_so_luong'] : 0;
+            $gioi_han_su_dung_tung_user = isset($_POST['gioi_han_su_dung_tung_user']) ? (int)$_POST['gioi_han_su_dung_tung_user'] : 0;
             $ngay_bat_dau = isset($_POST['ngay_bat_dau']) ? trim($_POST['ngay_bat_dau']) : '';
             $ngay_ket_thuc = isset($_POST['ngay_ket_thuc']) ? trim($_POST['ngay_ket_thuc']) : '';
             $ma_hang = isset($_POST['ma_hang']) ? (int)$_POST['ma_hang'] : 0;
             $trang_thai = isset($_POST['trang_thai']) ? 1 : 0;
+            $kieu_hien_thi = isset($_POST['kieu_hien_thi']) ? trim($_POST['kieu_hien_thi']) : 'cong_khai';
 
             $errors = [];
             if (empty($ma_code)) {
@@ -164,6 +174,10 @@ class AdminVoucherController
                 $errors[] = "Tổng số lượng không được âm.";
             }
 
+            if ($gioi_han_su_dung_tung_user < 0) {
+                $errors[] = "Giới hạn sử dụng mỗi user không được âm.";
+            }
+
             if (empty($ngay_bat_dau) || empty($ngay_ket_thuc)) {
                 $errors[] = "Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.";
             } elseif (strtotime($ngay_ket_thuc) <= strtotime($ngay_bat_dau)) {
@@ -186,9 +200,11 @@ class AdminVoucherController
                 'don_hang_toi_thieu' => $don_hang_toi_thieu,
                 'muc_giam_toi_da' => $muc_giam_toi_da,
                 'tong_so_luong' => $tong_so_luong,
+                'gioi_han_su_dung_tung_user' => $gioi_han_su_dung_tung_user,
                 'ngay_bat_dau' => $ngay_bat_dau,
                 'ngay_ket_thuc' => $ngay_ket_thuc,
-                'trang_thai' => $trang_thai
+                'trang_thai' => $trang_thai,
+                'kieu_hien_thi' => $kieu_hien_thi
             ];
 
             if ($this->model->updateVoucher($id, $data)) {

@@ -263,10 +263,24 @@ $statusInfo = $statusMap[$status] ?? ['label' => $status, 'icon' => 'bi-question
         <div class="card shadow-sm border-0 rounded-4 p-4 mt-4" id="review-form-<?= htmlspecialchars($order->getMa_don_hang()) ?>" style="display: none;">
             <h4 class="mb-4 text-dark fw-bold" style="font-size: 1.4rem;"><i class="bi bi-star-fill text-warning me-2"></i>Viết đánh giá sản phẩm</h4>
             <form action="?page=submit-review" method="POST">
+                <input type="hidden" name="ma_don_hang" value="<?= $order->getId() ?>">
+                <?php 
+                $orderModelInstance = new \app\models\OrderModel();
+                $unreviewedCount = 0;
+                foreach ($items as $item) {
+                    if (!$orderModelInstance->hasReviewedProduct($_SESSION['user']['id'], $item->getMa_san_pham(), $order->getId())) {
+                        $unreviewedCount++;
+                    }
+                }
+                ?>
                 <?php foreach ($items as $item): ?>
                     <?php
                     $prodId = $item->getMa_san_pham();
-                    $hasReviewed = (new \app\models\OrderModel())->hasReviewedProduct($_SESSION['user']['id'], $prodId);
+                    $hasReviewed = $orderModelInstance->hasReviewedProduct($_SESSION['user']['id'], $prodId, $order->getId());
+                    $reviewInfo = null;
+                    if ($hasReviewed) {
+                        $reviewInfo = $orderModelInstance->getProductReviewForOrder($_SESSION['user']['id'], $prodId, $order->getId());
+                    }
                     ?>
                     <div class="review-product-item pb-3 mb-3 border-bottom d-flex flex-column gap-2">
                         <div class="d-flex align-items-center gap-3">
@@ -279,8 +293,23 @@ $statusInfo = $statusMap[$status] ?? ['label' => $status, 'icon' => 'bi-question
                             </div>
                         </div>
                         
-                        <?php if ($hasReviewed): ?>
-                            <div class="text-success small fw-semibold mt-1"><i class="bi bi-patch-check-fill me-1"></i>Bạn đã đánh giá sản phẩm này</div>
+                        <?php if ($hasReviewed && $reviewInfo): ?>
+                            <div class="p-2 mb-1 rounded border border-success-subtle bg-white mt-1">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <div class="d-flex align-items-center gap-1 text-warning">
+                                        <?php for ($s = 1; $s <= 5; $s++): ?>
+                                            <i class="bi <?= $s <= (int)$reviewInfo['diem_so'] ? 'bi-star-fill' : 'bi-star' ?>" style="font-size: 1.2rem;"></i>
+                                        <?php endfor; ?>
+                                        <span class="ms-1 text-success fw-bold small" style="font-size: 11px;"><i class="bi bi-patch-check-fill me-0.5"></i> Đã đánh giá</span>
+                                    </div>
+                                    <small class="text-muted" style="font-size: 11px;"><?= date('H:i d/m/Y', strtotime($reviewInfo['ngay_tao'])) ?></small>
+                                </div>
+                                <?php if (!empty($reviewInfo['binh_luan'])): ?>
+                                    <div class="text-dark bg-light p-2 rounded small mt-1" style="font-size: 11.5px; border-left: 2px solid #ff7b00; font-style: italic;">
+                                        "<?= htmlspecialchars($reviewInfo['binh_luan']) ?>"
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         <?php else: ?>
                             <div class="d-flex align-items-center gap-2 mt-2">
                                 <span class="text-muted small">Đánh giá sao:</span>
@@ -299,8 +328,10 @@ $statusInfo = $statusMap[$status] ?? ['label' => $status, 'icon' => 'bi-question
                 <?php endforeach; ?>
                 
                 <div class="d-flex justify-content-end gap-2 mt-2">
-                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4" onclick="toggleReviewForm('<?= htmlspecialchars($order->getMa_don_hang()) ?>')">Hủy bỏ</button>
-                    <button type="submit" class="btn btn-primary rounded-3 text-white fw-semibold px-4">Gửi đánh giá</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4" onclick="toggleReviewForm('<?= htmlspecialchars($order->getMa_don_hang()) ?>')"><?= $unreviewedCount > 0 ? 'Hủy bỏ' : 'Đóng lại' ?></button>
+                    <?php if ($unreviewedCount > 0): ?>
+                        <button type="submit" class="btn btn-primary rounded-3 text-white fw-semibold px-4">Gửi đánh giá</button>
+                    <?php endif; ?>
                 </div>
             </form>
         </div>
