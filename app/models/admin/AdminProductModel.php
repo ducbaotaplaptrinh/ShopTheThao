@@ -555,7 +555,7 @@ class AdminProductModel extends Model
         return $variants;
     }
 
-    public function applyBatchDiscount(array $productIds, float $percent)
+    public function applyBatchDiscount(array $productIds, float $value, string $type): bool
     {
         try {
             $this->conn->beginTransaction();
@@ -574,7 +574,14 @@ class AdminProductModel extends Model
                 $giaBan = floatval($stmtSelect->fetchColumn());
 
                 if ($giaBan > 0) {
-                    $giaKM = $percent > 0 ? ($giaBan * (1 - $percent / 100)) : null;
+                    $giaKM = null;
+                    if ($value > 0) {
+                        if ($type === 'phan_tram') {
+                            $giaKM = $giaBan * (1 - $value / 100);
+                        } elseif ($type === 'tien_mat') {
+                            $giaKM = max(0.00, $giaBan - $value);
+                        }
+                    }
                     $stmt->execute([
                         'gia_km' => $giaKM,
                         'id' => $id
@@ -588,5 +595,24 @@ class AdminProductModel extends Model
             $this->conn->rollBack();
             throw $e;
         }
+    }
+
+    public function getFilteredProductIds(array $filters): array
+    {
+        $filterData = $this->buildFilterSQL($filters);
+        $whereSql = $filterData['where'];
+        $params = $filterData['params'];
+
+        $sql = "SELECT sp.id 
+                FROM san_pham sp
+                LEFT JOIN danh_muc dm ON sp.ma_danh_muc = dm.id
+                LEFT JOIN thuong_hieu th ON sp.ma_thuong_hieu = th.id
+                WHERE $whereSql";
+        $stmt = $this->conn->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
     }
 }

@@ -50,6 +50,8 @@ if (!function_exists('buildPageUrl')) {
         $displayError = 'Vui lòng chọn ít nhất một sản phẩm để áp dụng giảm giá!';
     } elseif ($errorMsg === 'invalid_discount_percentage') {
         $displayError = 'Phần trăm giảm giá không hợp lệ (phải từ 0% đến 100%)!';
+    } elseif ($errorMsg === 'invalid_discount_value') {
+        $displayError = 'Số tiền giảm giá không hợp lệ (phải lớn hơn hoặc bằng 0đ)!';
     }
     ?>
     <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
@@ -158,17 +160,35 @@ if (!function_exists('buildPageUrl')) {
     </div>
 </form>
 
+<?php
+$isFilterActive = !empty($filters['keyword']) || !empty($filters['ma_danh_muc']) || !empty($filters['ma_thuong_hieu']) || !empty($filters['kho']) || !empty($filters['trang_thai']) || !empty($filters['khuyen_mai']) || !empty($filters['doanh_so']);
+?>
+
 <!-- Batch Actions Bar -->
-<div id="batchActionsBar" class="admin-card mb-3 p-3 bg-light rounded border d-none shadow-sm">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+<div id="batchActionsBar" class="admin-card mb-3 p-3 bg-light rounded border <?= ($isFilterActive) ? '' : 'd-none' ?> shadow-sm" style="border-left: 4px solid #0d6efd !important;">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div>
-            <span class="fw-bold text-dark"><i class="bi bi-check2-square text-primary me-2"></i>Đang chọn: <span id="selectedCount" class="badge bg-primary">0</span> sản phẩm</span>
+            <span class="fw-bold text-dark">
+                <i class="bi bi-check2-square text-primary me-2"></i>Đang chọn: 
+                <span id="selectedCount" class="badge bg-primary">0</span> sản phẩm
+            </span>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <label class="form-label mb-0 small fw-bold text-secondary">Phần trăm giảm giá (%):</label>
-            <input type="number" id="batchDiscountPercent" class="form-control form-control-sm" style="width: 80px;" placeholder="Vd: 15" min="0" max="100">
-            <button type="button" class="btn btn-sm btn-danger text-white fw-bold px-3" onclick="applyBatchDiscount()">
-                <i class="bi bi-percent me-1"></i> Áp dụng
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="small fw-bold text-secondary me-1">Thiết lập giảm giá hàng loạt:</span>
+            
+            <select id="batchDiscountType" class="form-select form-select-sm" style="width: 145px; display: inline-block;">
+                <option value="phan_tram">Giảm theo %</option>
+                <option value="tien_mat">Giảm theo số tiền (đ)</option>
+            </select>
+            
+            <input type="number" id="batchDiscountValue" class="form-control form-control-sm" style="width: 130px; display: inline-block;" placeholder="Vd: 10 hoặc 50000" min="0">
+            
+            <button type="button" id="btnApplySelected" class="btn btn-sm btn-danger text-white fw-bold px-3" onclick="applyBatchDiscount(0)" disabled>
+                <i class="bi bi-check-circle me-1"></i> Áp dụng cho mục đã chọn
+            </button>
+
+            <button type="button" class="btn btn-sm btn-warning text-white fw-bold px-3" onclick="applyBatchDiscount(1)">
+                <i class="bi bi-funnel me-1"></i> Áp dụng cho TOÀN BỘ kết quả lọc
             </button>
         </div>
     </div>
@@ -407,7 +427,18 @@ if (!function_exists('buildPageUrl')) {
 
 <!-- Form ẩn để gửi yêu cầu giảm giá hàng loạt -->
 <form id="batchDiscountForm" action="?page=admin-product-batch-discount" method="POST" style="display: none;">
-    <input type="hidden" name="discount_percent" id="batchFormPercent">
+    <input type="hidden" name="discount_type" id="batchFormType">
+    <input type="hidden" name="discount_value" id="batchFormValue">
+    <input type="hidden" name="apply_to_all_filtered" id="batchFormApplyAll" value="0">
+    <!-- Filter fields to recreate search on server -->
+    <input type="hidden" name="keyword" value="<?= htmlspecialchars($filters['keyword'] ?? '') ?>">
+    <input type="hidden" name="ma_danh_muc" value="<?= htmlspecialchars($filters['ma_danh_muc'] ?? '') ?>">
+    <input type="hidden" name="ma_thuong_hieu" value="<?= htmlspecialchars($filters['ma_thuong_hieu'] ?? '') ?>">
+    <input type="hidden" name="kho" value="<?= htmlspecialchars($filters['kho'] ?? '') ?>">
+    <input type="hidden" name="trang_thai" value="<?= htmlspecialchars($filters['trang_thai'] ?? '') ?>">
+    <input type="hidden" name="da_xoa" value="<?= htmlspecialchars($filters['da_xoa'] ?? '') ?>">
+    <input type="hidden" name="khuyen_mai" value="<?= htmlspecialchars($filters['khuyen_mai'] ?? '') ?>">
+    <input type="hidden" name="doanh_so" value="<?= htmlspecialchars($filters['doanh_so'] ?? '') ?>">
 </form>
 
 <script>
@@ -442,15 +473,22 @@ if (!function_exists('buildPageUrl')) {
         const productCheckboxes = document.querySelectorAll(".product-checkbox");
         const batchActionsBar = document.getElementById("batchActionsBar");
         const selectedCountSpan = document.getElementById("selectedCount");
+        const isFilterActive = <?= $isFilterActive ? 'true' : 'false' ?>;
 
         function updateBatchActionBar() {
             const checkedCount = document.querySelectorAll(".product-checkbox:checked").length;
+            const btnSelected = document.getElementById("btnApplySelected");
+            
             if (checkedCount > 0) {
                 batchActionsBar.classList.remove("d-none");
                 selectedCountSpan.textContent = checkedCount;
+                if (btnSelected) btnSelected.removeAttribute("disabled");
             } else {
-                batchActionsBar.classList.add("d-none");
+                if (!isFilterActive) {
+                    batchActionsBar.classList.add("d-none");
+                }
                 selectedCountSpan.textContent = "0";
+                if (btnSelected) btnSelected.setAttribute("disabled", "true");
             }
         }
 
@@ -473,51 +511,76 @@ if (!function_exists('buildPageUrl')) {
                 updateBatchActionBar();
             });
         });
+
+        // Initialize state on load
+        updateBatchActionBar();
     });
 
-    function applyBatchDiscount() {
-        const percentInput = document.getElementById("batchDiscountPercent");
-        const percentVal = percentInput ? percentInput.value.trim() : "";
-        if (percentVal === "") {
-            alert("Vui lòng nhập phần trăm giảm giá!");
+    function applyBatchDiscount(applyAll) {
+        const typeSelect = document.getElementById("batchDiscountType");
+        const valInput = document.getElementById("batchDiscountValue");
+        
+        const type = typeSelect ? typeSelect.value : "phan_tram";
+        const valText = valInput ? valInput.value.trim() : "";
+        
+        if (valText === "") {
+            alert("Vui lòng nhập giá trị giảm giá!");
             return;
         }
 
-        const percent = parseFloat(percentVal);
-        if (isNaN(percent) || percent < 0 || percent > 100) {
-            alert("Phần trăm giảm giá không hợp lệ! Vui lòng nhập số từ 0 đến 100.");
+        const value = parseFloat(valText);
+        if (isNaN(value) || value < 0) {
+            alert("Giá trị giảm giá không hợp lệ! Vui lòng nhập số lớn hơn hoặc bằng 0.");
             return;
         }
 
-        const selectedCheckboxes = document.querySelectorAll(".product-checkbox:checked");
-        if (selectedCheckboxes.length === 0) {
-            alert("Vui lòng chọn ít nhất một sản phẩm!");
+        if (type === "phan_tram" && value > 100) {
+            alert("Phần trăm giảm giá không được vượt quá 100%!");
             return;
         }
 
-        const confirmMsg = percent > 0 
-            ? `Bạn có chắc chắn muốn áp dụng giảm giá ${percent}% cho ${selectedCheckboxes.length} sản phẩm đã chọn không?` 
-            : `Bạn có chắc chắn muốn XÓA giảm giá (đưa về giá gốc) cho ${selectedCheckboxes.length} sản phẩm đã chọn không?`;
+        let selectedCount = 0;
+        let confirmMsg = "";
+
+        if (applyAll === 1) {
+            confirmMsg = value > 0 
+                ? `CẢNH BÁO: Bạn có chắc chắn muốn áp dụng giảm giá (${type === 'phan_tram' ? value + '%' : value.toLocaleString('vi-VN') + 'đ'}) cho TOÀN BỘ sản phẩm khớp với bộ lọc hiện tại không?`
+                : `CẢNH BÁO: Bạn có chắc chắn muốn XÓA giảm giá (đưa về giá gốc) cho TOÀN BỘ sản phẩm khớp với bộ lọc hiện tại không?`;
+        } else {
+            const selectedCheckboxes = document.querySelectorAll(".product-checkbox:checked");
+            selectedCount = selectedCheckboxes.length;
+            if (selectedCount === 0) {
+                alert("Vui lòng chọn ít nhất một sản phẩm!");
+                return;
+            }
+            confirmMsg = value > 0 
+                ? `Bạn có chắc chắn muốn áp dụng giảm giá (${type === 'phan_tram' ? value + '%' : value.toLocaleString('vi-VN') + 'đ'}) cho ${selectedCount} sản phẩm đã chọn không?`
+                : `Bạn có chắc chắn muốn XÓA giảm giá (đưa về giá gốc) cho ${selectedCount} sản phẩm đã chọn không?`;
+        }
 
         if (!confirm(confirmMsg)) {
             return;
         }
 
         const form = document.getElementById("batchDiscountForm");
-        const formPercent = document.getElementById("batchFormPercent");
-        formPercent.value = percent;
+        document.getElementById("batchFormType").value = type;
+        document.getElementById("batchFormValue").value = value;
+        document.getElementById("batchFormApplyAll").value = applyAll;
 
-        // Clear previous inputs
+        // Clear previous product ID inputs
         form.querySelectorAll("input[name='product_ids[]']").forEach(el => el.remove());
 
-        // Add selected IDs
-        selectedCheckboxes.forEach(cb => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "product_ids[]";
-            input.value = cb.value;
-            form.appendChild(input);
-        });
+        if (applyAll === 0) {
+            // Add selected IDs
+            const selectedCheckboxes = document.querySelectorAll(".product-checkbox:checked");
+            selectedCheckboxes.forEach(cb => {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "product_ids[]";
+                input.value = cb.value;
+                form.appendChild(input);
+            });
+        }
 
         form.submit();
     }

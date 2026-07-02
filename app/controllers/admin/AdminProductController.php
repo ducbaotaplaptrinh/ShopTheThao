@@ -296,21 +296,43 @@ class AdminProductController
     public function batchDiscount()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $productIds = $_POST['product_ids'] ?? [];
-            $percent = isset($_POST['discount_percent']) ? floatval($_POST['discount_percent']) : 0;
+            $discountType = $_POST['discount_type'] ?? 'phan_tram';
+            $discountValue = isset($_POST['discount_value']) ? floatval($_POST['discount_value']) : 0;
+            $applyToAll = isset($_POST['apply_to_all_filtered']) && $_POST['apply_to_all_filtered'] == '1';
+
+            if ($applyToAll) {
+                $filters = [
+                    'keyword' => $_POST['keyword'] ?? '',
+                    'ma_danh_muc' => $_POST['ma_danh_muc'] ?? '',
+                    'ma_thuong_hieu' => $_POST['ma_thuong_hieu'] ?? '',
+                    'kho' => $_POST['kho'] ?? '',
+                    'trang_thai' => $_POST['trang_thai'] ?? '',
+                    'da_xoa' => $_POST['da_xoa'] ?? '',
+                    'khuyen_mai' => $_POST['khuyen_mai'] ?? '',
+                    'doanh_so' => $_POST['doanh_so'] ?? '',
+                ];
+                $productIds = $this->model->getFilteredProductIds($filters);
+            } else {
+                $productIds = $_POST['product_ids'] ?? [];
+            }
 
             if (empty($productIds) || !is_array($productIds)) {
                 header("Location: ?page=admin-products&error=no_products_selected");
                 exit;
             }
 
-            if ($percent < 0 || $percent > 100) {
+            if ($discountValue < 0) {
+                header("Location: ?page=admin-products&error=invalid_discount_value");
+                exit;
+            }
+
+            if ($discountType === 'phan_tram' && $discountValue > 100) {
                 header("Location: ?page=admin-products&error=invalid_discount_percentage");
                 exit;
             }
 
             try {
-                $this->model->applyBatchDiscount($productIds, $percent);
+                $this->model->applyBatchDiscount($productIds, $discountValue, $discountType);
                 header("Location: ?page=admin-products&success=batch_discount_applied");
                 exit;
             } catch (\Exception $e) {
